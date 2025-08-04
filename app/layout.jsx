@@ -1,4 +1,4 @@
-import { ClerkProvider } from '@clerk/nextjs';
+import { ClerkProvider } from "@clerk/nextjs";
 import localFont from "next/font/local";
 import Navbar from "../components/Navbar";
 import "./globals.css";
@@ -20,12 +20,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
-      <html lang="en" suppressHydrationWarning> 
+      <html lang="en" suppressHydrationWarning>
         <body className={`${geistSans.variable} ${geistMono.variable}`}>
           <Navbar />
-          <main>
-            {children}
-          </main>
+          <main>{children}</main>
         </body>
       </html>
     </ClerkProvider>

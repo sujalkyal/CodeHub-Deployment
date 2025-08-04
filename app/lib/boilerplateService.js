@@ -1,4 +1,3 @@
-
 /**
  * Service to handle problem boilerplate generation, S3 upload, and DB persistence.
  *
@@ -15,7 +14,6 @@ import { generateJavaBoilerplates } from "./templates/toJava.js";
 import { generateCppBoilerplates } from "./templates/toCpp.js";
 import prisma from "../../utils/db.js";
 
-
 /**
  * Main handler for problem generation, S3 upload, and DB persistence.
  * @param {Object} problemData - The problem data object.
@@ -24,47 +22,63 @@ import prisma from "../../utils/db.js";
  */
 export async function handleGeneration(problemData, inputOutputFile) {
   // 1. Clean up newlines in relevant fields
-  ["structure", "inputFormat", "outputFormat", "constraints", "sampleInput", "sampleOutput"].forEach(field => {
+  [
+    "structure",
+    "inputFormat",
+    "outputFormat",
+    "constraints",
+    "sampleInput",
+    "sampleOutput",
+  ].forEach((field) => {
     if (problemData[field]) {
-      problemData[field] = problemData[field].replace(/\\n/g, '\n');
+      problemData[field] = problemData[field].replace(/\\n/g, "\n");
     }
   });
   console.log("[handleGeneration] Problem data received:", problemData);
 
   // 2. Create slug from title
-  const slug = (problemData.title || '')
+  const slug = (problemData.title || "")
     .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
   console.log(`[handleGeneration] Generated slug: ${slug}`);
 
   // 3. Upload input/output file to S3
   const inputOutputKey = `problems/${slug}/input_output.json`;
-  console.log(`[handleGeneration] Uploading input/output file to S3 at key: ${inputOutputKey}`);
+  console.log(
+    `[handleGeneration] Uploading input/output file to S3 at key: ${inputOutputKey}`
+  );
   await uploadFile({
     Bucket: process.env.BUCKET_NAME,
     Key: inputOutputKey,
     Body: inputOutputFile.buffer,
-    ContentType: inputOutputFile.mimetype
+    ContentType: inputOutputFile.mimetype,
   });
   console.log("[handleGeneration] File uploaded to S3 successfully.");
 
   // 4. Generate boilerplate and full-boilerplate code for each language
   const structure = problemData.structure;
-  console.log("[handleGeneration] Generating boilerplates for structure:\n", structure);
+  console.log(
+    "[handleGeneration] Generating boilerplates for structure:\n",
+    structure
+  );
   const cpp = generateCppBoilerplates(structure);
   const java = generateJavaBoilerplates(structure);
   const python = generatePythonBoilerplates(structure);
-  console.log("[handleGeneration] Boilerplates generated for C++, Java, Python.");
+  console.log(
+    "[handleGeneration] Boilerplates generated for C++, Java, Python."
+  );
 
   // 5. Get language IDs from DB
   const languages = await prisma.language.findMany({
-    where: { name: { in: ["C++", "Java", "Python"] } }
+    where: { name: { in: ["C++", "Java", "Python"] } },
   });
   const langMap = {};
-  languages.forEach(lang => { langMap[lang.name.toLowerCase()] = lang; });
+  languages.forEach((lang) => {
+    langMap[lang.name.toLowerCase()] = lang;
+  });
   console.log("[handleGeneration] Language map:", langMap);
 
   // 6. Create problem in database
@@ -80,27 +94,29 @@ export async function handleGeneration(problemData, inputOutputFile) {
       sampleInput: problemData.sampleInput,
       sampleOutput: problemData.sampleOutput,
       difficulty: problemData.difficulty,
-    }
+    },
   });
-  console.log(`[handleGeneration] Problem created in DB with id: ${problem.id}`);
+  console.log(
+    `[handleGeneration] Problem created in DB with id: ${problem.id}`
+  );
 
   // 7. Create ProblemBoilerplate entry in database for each language
   const boilerplates = [
     {
       language: "c++",
       code: cpp.boilerplate,
-      fullcode: cpp.fullBoilerplate
+      fullcode: cpp.fullBoilerplate,
     },
     {
       language: "java",
       code: java.boilerplate,
-      fullcode: java.fullBoilerplate
+      fullcode: java.fullBoilerplate,
     },
     {
       language: "python",
       code: python.boilerplate,
-      fullcode: python.fullBoilerplate
-    }
+      fullcode: python.fullBoilerplate,
+    },
   ];
   for (const bp of boilerplates) {
     const lang = langMap[bp.language];
@@ -110,12 +126,16 @@ export async function handleGeneration(problemData, inputOutputFile) {
           problemId: problem.id,
           languageId: lang.id,
           code: bp.code,
-          fullcode: bp.fullcode
-        }
+          fullcode: bp.fullcode,
+        },
       });
-      console.log(`[handleGeneration] Boilerplate for ${bp.language} saved to DB.`);
+      console.log(
+        `[handleGeneration] Boilerplate for ${bp.language} saved to DB.`
+      );
     } else {
-      console.warn(`[handleGeneration] Language not found in DB: ${bp.language}`);
+      console.warn(
+        `[handleGeneration] Language not found in DB: ${bp.language}`
+      );
     }
   }
 
@@ -129,12 +149,14 @@ export async function handleGeneration(problemData, inputOutputFile) {
     await prisma.problemTag.create({
       data: {
         problemId: problem.id,
-        tagId: tag.id
-      }
+        tagId: tag.id,
+      },
     });
     console.log(`[handleGeneration] Linked tag '${tagName}' to problem.`);
   }
 
-  console.log(`[handleGeneration] Problem generation complete for slug: ${slug}`);
+  console.log(
+    `[handleGeneration] Problem generation complete for slug: ${slug}`
+  );
   return problem;
 }

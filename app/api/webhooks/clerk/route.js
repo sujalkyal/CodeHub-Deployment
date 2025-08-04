@@ -1,12 +1,13 @@
-
-import { Webhook } from 'svix';
-import prisma from '../../../../utils/db.js';
+import { Webhook } from "svix";
+import prisma from "../../../../utils/db.js";
 
 export async function POST(req) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
 
   if (!WEBHOOK_SECRET) {
-    throw new Error('Please add CLERK_WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local');
+    throw new Error(
+      "Please add CLERK_WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local"
+    );
   }
 
   // Get the headers directly from the 'req' object
@@ -15,7 +16,7 @@ export async function POST(req) {
   const svix_signature = req.headers.get("svix-signature");
 
   if (!svix_id || !svix_timestamp || !svix_signature) {
-    return new Response('Error occured -- no svix headers', { status: 400 });
+    return new Response("Error occured -- no svix headers", { status: 400 });
   }
 
   // Get the body
@@ -33,15 +34,15 @@ export async function POST(req) {
       "svix-signature": svix_signature,
     });
   } catch (err) {
-    console.error('Error verifying webhook:', err);
-    return new Response('Error occured', { status: 400 });
+    console.error("Error verifying webhook:", err);
+    return new Response("Error occured", { status: 400 });
   }
 
   const eventType = evt.type;
 
   // --- Start of Database Operations ---
   try {
-    if (eventType === 'user.created') {
+    if (eventType === "user.created") {
       const { id, email_addresses, username } = evt.data;
       await prisma.user.create({
         data: {
@@ -52,7 +53,7 @@ export async function POST(req) {
       });
     }
 
-    if (eventType === 'user.updated') {
+    if (eventType === "user.updated") {
       const { id, username } = evt.data;
       await prisma.user.update({
         where: { id: id },
@@ -60,7 +61,7 @@ export async function POST(req) {
       });
     }
 
-    if (eventType === 'user.deleted') {
+    if (eventType === "user.deleted") {
       const { id } = evt.data;
       const existingUser = await prisma.user.findUnique({
         where: { id: id },
@@ -73,11 +74,10 @@ export async function POST(req) {
       }
     }
 
-    return new Response('', { status: 200 });
-
+    return new Response("", { status: 200 });
   } catch (err) {
-    console.error('Error processing webhook:', err);
-    return new Response('Error occured', {
+    console.error("Error processing webhook:", err);
+    return new Response("Error occured", {
       status: 500,
     });
   }

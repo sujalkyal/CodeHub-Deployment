@@ -10,7 +10,7 @@
 
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,19 +23,29 @@ function log(msg, ...args) {
 }
 
 function parseStructure(structure) {
-  log('Parsing structure...');
-  const lines = structure.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  log("Parsing structure...");
+  const lines = structure
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
   const result = { functions: [], classes: [] };
   let i = 0;
   while (i < lines.length) {
     if (lines[i].startsWith("Function:")) {
-      const func = { name: lines[i].split(":")[1].trim(), inputs: [], output: null };
+      const func = {
+        name: lines[i].split(":")[1].trim(),
+        inputs: [],
+        output: null,
+      };
       i++;
-      while (i < lines.length && (lines[i].startsWith("Input:") || lines[i].startsWith("Output:"))) {
+      while (
+        i < lines.length &&
+        (lines[i].startsWith("Input:") || lines[i].startsWith("Output:"))
+      ) {
         if (lines[i].startsWith("Input:")) {
           const inputStr = lines[i].replace("Input:", "").trim();
           if (inputStr) {
-            inputStr.split(",").forEach(pair => {
+            inputStr.split(",").forEach((pair) => {
               const [type, ...nameParts] = pair.trim().split(" ");
               func.inputs.push({ type, name: nameParts.join(" ") });
             });
@@ -46,7 +56,7 @@ function parseStructure(structure) {
         i++;
       }
       result.functions.push(func);
-      log('Parsed function:', func);
+      log("Parsed function:", func);
     } else if (lines[i].startsWith("Class:")) {
       const className = lines[i].split(":")[1].trim();
       i++;
@@ -57,11 +67,14 @@ function parseStructure(structure) {
           const methodLine = lines[i].replace("-", "").trim();
           const method = { name: methodLine, inputs: [], output: null };
           i++;
-          while (i < lines.length && (lines[i].startsWith("Input:") || lines[i].startsWith("Output:"))) {
+          while (
+            i < lines.length &&
+            (lines[i].startsWith("Input:") || lines[i].startsWith("Output:"))
+          ) {
             if (lines[i].startsWith("Input:")) {
               const inputStr = lines[i].replace("Input:", "").trim();
               if (inputStr) {
-                inputStr.split(",").forEach(pair => {
+                inputStr.split(",").forEach((pair) => {
                   const [type, ...nameParts] = pair.trim().split(" ");
                   method.inputs.push({ type, name: nameParts.join(" ") });
                 });
@@ -75,12 +88,12 @@ function parseStructure(structure) {
         }
       }
       result.classes.push({ name: className, methods });
-      log('Parsed class:', className);
+      log("Parsed class:", className);
     } else {
       i++;
     }
   }
-  log('Parsing complete.');
+  log("Parsing complete.");
   return result;
 }
 
@@ -89,50 +102,54 @@ function mapType(type) {
 }
 
 function generateFunctionBoilerplate(func) {
-  log('Generating function boilerplate for', func.name);
-  const args = func.inputs.map(inp => `${mapType(inp.type)} ${inp.name}`).join(", ");
+  log("Generating function boilerplate for", func.name);
+  const args = func.inputs
+    .map((inp) => `${mapType(inp.type)} ${inp.name}`)
+    .join(", ");
   const output = mapType(func.output);
   return `public static ${output} ${func.name}(${args}) {\n    // Write your code here\n}`;
 }
 
 function generateBoilerplate(parsed) {
-  log('Generating combined boilerplate...');
+  log("Generating combined boilerplate...");
   let code = "";
-  parsed.classes.forEach(cls => {
+  parsed.classes.forEach((cls) => {
     code += generateClassBoilerplate(cls) + "\n\n";
   });
-  parsed.functions.forEach(func => {
+  parsed.functions.forEach((func) => {
     code += generateFunctionBoilerplate(func) + "\n\n";
   });
   return code.trim();
 }
 
 function generateFullBoilerplate(parsed) {
-  log('Generating full boilerplate...');
+  log("Generating full boilerplate...");
   let imports = ["import java.util.*;", "import java.io.*;"];
   let code = imports.join("\n") + "\n\n";
   code += "public class Main {\n";
 
-  parsed.functions.forEach(func => {
+  parsed.functions.forEach((func) => {
     code += generateFunctionBoilerplate(func) + "\n\n";
   });
 
   code += "    public static void main(String[] args) throws Exception {\n";
   code += "        Scanner sc = new Scanner(System.in);\n";
 
-  const mainFunc = parsed.functions[0] || (parsed.classes[0]?.methods[0]);
+  const mainFunc = parsed.functions[0] || parsed.classes[0]?.methods[0];
   if (mainFunc) {
-    log('Generating input and output code for main function:', mainFunc.name);
+    log("Generating input and output code for main function:", mainFunc.name);
     let knownSizes = {};
-    mainFunc.inputs.forEach(inp => {
+    mainFunc.inputs.forEach((inp) => {
       const type = mapType(inp.type);
       const name = inp.name;
       if (type === "int") knownSizes[name] = true;
       code += `        ${generateInputJava(inp, knownSizes)}\n`;
     });
 
-    const argsList = mainFunc.inputs.map(inp => inp.name).join(", ");
-    const call = parsed.functions[0] ? `${mainFunc.name}(${argsList})` : `obj.${mainFunc.name}(${argsList})`;
+    const argsList = mainFunc.inputs.map((inp) => inp.name).join(", ");
+    const call = parsed.functions[0]
+      ? `${mainFunc.name}(${argsList})`
+      : `obj.${mainFunc.name}(${argsList})`;
     const outputType = mapType(mainFunc.output || "void");
 
     if (outputType.startsWith("List<List<") || outputType.endsWith("[][]")) {
@@ -158,12 +175,12 @@ function generateFullBoilerplate(parsed) {
   code += "    }\n";
   code += "}\n";
 
-  log('Full boilerplate generated.');
+  log("Full boilerplate generated.");
   return code;
 }
 
 function generateInputJava(inp, knownSizes = {}) {
-  log('Generating input code for', inp.name, 'of type', inp.type);
+  log("Generating input code for", inp.name, "of type", inp.type);
   const type = mapType(inp.type);
   const name = inp.name;
 
@@ -180,7 +197,8 @@ function generateInputJava(inp, knownSizes = {}) {
     const innerType = match ? match[1] : "Integer";
     const sizeVars = Object.keys(knownSizes);
     const [rowsVar, colsVar] = sizeVars.slice(-2);
-    if (!rowsVar || !colsVar) return `// TODO: Missing size variables for ${name}`;
+    if (!rowsVar || !colsVar)
+      return `// TODO: Missing size variables for ${name}`;
 
     return (
       `List<List<${innerType}>> ${name} = new ArrayList<>();\n` +
@@ -223,10 +241,10 @@ function capitalize(str) {
 }
 
 export function generateJavaBoilerplates(structure) {
-  log('Generating Java boilerplates...');
+  log("Generating Java boilerplates...");
   const parsed = parseStructure(structure);
   const boilerplate = generateBoilerplate(parsed);
   const fullBoilerplate = generateFullBoilerplate(parsed);
-  log('Boilerplate and full code generated.');
+  log("Boilerplate and full code generated.");
   return { boilerplate, fullBoilerplate };
 }

@@ -10,7 +10,7 @@
  * - (Optional) Cleans up the run session after completion
  */
 
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 import prisma from "../../../../utils/db.js";
 
 export async function GET(req, { params }) {
@@ -18,7 +18,7 @@ export async function GET(req, { params }) {
     const { runId } = await params;
     const numericId = parseInt(runId);
     if (isNaN(numericId)) {
-      return NextResponse.json({ error: 'Invalid Run ID' }, { status: 400 });
+      return NextResponse.json({ error: "Invalid Run ID" }, { status: 400 });
     }
 
     // Fetch all test case results for this run, including all Judge0 fields
@@ -40,11 +40,14 @@ export async function GET(req, { params }) {
 
     // If no results, treat as already cleaned up
     if (!results || results.length === 0) {
-      return NextResponse.json({ status: 'Completed', results: [] }, { status: 200 });
+      return NextResponse.json(
+        { status: "Completed", results: [] },
+        { status: 200 }
+      );
     }
 
     // Prepare a user-friendly response for each test case
-    const testCaseResults = results.map(r => ({
+    const testCaseResults = results.map((r) => ({
       id: r.id,
       passed: r.passed,
       statusId: r.statusId,
@@ -58,7 +61,8 @@ export async function GET(req, { params }) {
     }));
 
     // If all test cases are finished, clean up and return results
-    const allFinished = results.length > 0 && results.every((r) => r.passed !== -1);
+    const allFinished =
+      results.length > 0 && results.every((r) => r.passed !== -1);
     if (allFinished) {
       // Always clean up after completion
       try {
@@ -66,22 +70,33 @@ export async function GET(req, { params }) {
         console.log(`[Run Poll] Cleaned up Run Session with ID: ${numericId}`);
       } catch (cleanupErr) {
         // If already deleted, ignore
-        console.warn(`[Run Poll] Cleanup warning for Run ID ${numericId}:`, cleanupErr.message);
+        console.warn(
+          `[Run Poll] Cleanup warning for Run ID ${numericId}:`,
+          cleanupErr.message
+        );
       }
-      return NextResponse.json({
-        status: 'Completed',
-        results: testCaseResults,
-      }, { status: 200 });
+      return NextResponse.json(
+        {
+          status: "Completed",
+          results: testCaseResults,
+        },
+        { status: 200 }
+      );
     }
 
     // If still processing, return partial results
-    return NextResponse.json({
-      status: 'Processing',
-      results: testCaseResults,
-    }, { status: 200 });
-
+    return NextResponse.json(
+      {
+        status: "Processing",
+        results: testCaseResults,
+      },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error('[Run Poll] Error:', error);
-    return NextResponse.json({ error: 'An internal server error occurred.' }, { status: 500 });
+    console.error("[Run Poll] Error:", error);
+    return NextResponse.json(
+      { error: "An internal server error occurred." },
+      { status: 500 }
+    );
   }
 }

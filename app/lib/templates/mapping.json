@@ -87,7 +87,7 @@
   "tuple<int,int>": {
     "python": "Tuple[int, int]",
     "cpp": "pair<int, int>",
-    "java": "int[]" 
+    "java": "int[]"
   },
   "tuple<string,int>": {
     "python": "Tuple[str, int]",

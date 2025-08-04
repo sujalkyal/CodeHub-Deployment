@@ -14,7 +14,7 @@ const payloadSchema = z.object({
   sampleInput: z.string(),
   sampleOutput: z.string(),
   difficulty: z.enum(["EASY", "MEDIUM", "HARD"]),
-  tags: z.array(z.string())
+  tags: z.array(z.string()),
 });
 
 export async function POST(req) {
@@ -59,12 +59,18 @@ export async function POST(req) {
       parsed = payloadSchema.parse(JSON.parse(jsonPayload));
     } catch (e) {
       console.error("[route] Invalid payload:", e);
-      return Response.json({ error: "Invalid payload: " + e.message }, { status: 400 });
+      return Response.json(
+        { error: "Invalid payload: " + e.message },
+        { status: 400 }
+      );
     }
 
     const inputOutputFile = result.files["input_output"];
     if (!inputOutputFile) {
-      return Response.json({ error: "Input file is required." }, { status: 400 });
+      return Response.json(
+        { error: "Input file is required." },
+        { status: 400 }
+      );
     }
 
     const created = await handleGeneration(parsed, inputOutputFile);

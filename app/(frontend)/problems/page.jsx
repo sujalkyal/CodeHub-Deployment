@@ -3,7 +3,13 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import axios from "axios";
-import { ChevronLeft, ChevronRight, TriangleAlert, SearchX, Search } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  TriangleAlert,
+  SearchX,
+  Search,
+} from "lucide-react";
 
 // --- Helper Components ---
 
@@ -28,16 +34,19 @@ const ProblemRow = ({ problem, index }) => {
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             {problem.tags.map((tag) => (
-              <span key={tag} className="rounded-md bg-slate-700 px-2 py-0.5 text-xs font-medium text-slate-300">
+              <span
+                key={tag}
+                className="rounded-md bg-slate-700 px-2 py-0.5 text-xs font-medium text-slate-300"
+              >
                 {tag}
               </span>
             ))}
           </div>
         </div>
         <div className="col-span-12 md:col-span-4 md:text-right">
-            <span className={`rounded-full px-3 py-1 text-xs font-bold ${style}`}>
-                {problem.difficulty}
-            </span>
+          <span className={`rounded-full px-3 py-1 text-xs font-bold ${style}`}>
+            {problem.difficulty}
+          </span>
         </div>
       </div>
     </Link>
@@ -48,7 +57,10 @@ const ProblemRow = ({ problem, index }) => {
 const SkeletonLoader = () => (
   <div className="space-y-4">
     {[...Array(8)].map((_, i) => (
-      <div key={i} className="h-24 animate-pulse rounded-lg border border-slate-800 bg-slate-800/40 p-4">
+      <div
+        key={i}
+        className="h-24 animate-pulse rounded-lg border border-slate-800 bg-slate-800/40 p-4"
+      >
         <div className="mb-4 h-6 w-3/4 rounded bg-slate-700"></div>
         <div className="flex gap-2">
           <div className="h-4 w-20 rounded bg-slate-700"></div>
@@ -65,11 +77,11 @@ export default function ProblemsListPage() {
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] = useState("");
   const [selectedTag, setSelectedTag] = useState("");
-  
+
   const [page, setPage] = useState(1);
   const [pageSize] = useState(15);
 
@@ -79,7 +91,8 @@ export default function ProblemsListPage() {
   const fetchProblems = useCallback(() => {
     setLoading(true);
     setError(null);
-    axios.get("/api/problems/getAllProblem")
+    axios
+      .get("/api/problems/getAllProblem")
       .then((res) => {
         setProblems(res.data);
       })
@@ -98,11 +111,16 @@ export default function ProblemsListPage() {
   }, [fetchProblems]);
 
   const filteredProblems = problems
-    .filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()))
-    .filter(p => selectedDifficulty ? p.difficulty === selectedDifficulty : true)
-    .filter(p => selectedTag ? p.tags.includes(selectedTag) : true);
+    .filter((p) => p.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter((p) =>
+      selectedDifficulty ? p.difficulty === selectedDifficulty : true
+    )
+    .filter((p) => (selectedTag ? p.tags.includes(selectedTag) : true));
 
-  const paginated = filteredProblems.slice((page - 1) * pageSize, page * pageSize);
+  const paginated = filteredProblems.slice(
+    (page - 1) * pageSize,
+    page * pageSize
+  );
   const totalPages = Math.ceil(filteredProblems.length / pageSize);
   const allTags = Array.from(new Set(problems.flatMap((p) => p.tags || [])));
 
@@ -117,9 +135,14 @@ export default function ProblemsListPage() {
       return (
         <div className="flex flex-col items-center justify-center rounded-lg bg-slate-800/60 p-10 text-center">
           <TriangleAlert className="mb-4 h-12 w-12 text-red-500" />
-          <h3 className="text-xl font-semibold text-slate-100">An Error Occurred</h3>
+          <h3 className="text-xl font-semibold text-slate-100">
+            An Error Occurred
+          </h3>
           <p className="text-red-400">{error}</p>
-          <button onClick={fetchProblems} className="mt-6 rounded-md bg-indigo-600 px-5 py-2 font-semibold text-white transition-transform hover:scale-105">
+          <button
+            onClick={fetchProblems}
+            className="mt-6 rounded-md bg-indigo-600 px-5 py-2 font-semibold text-white transition-transform hover:scale-105"
+          >
             Try Again
           </button>
         </div>
@@ -143,7 +166,9 @@ export default function ProblemsListPage() {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg bg-slate-800/60 p-10 text-center">
         <SearchX className="mb-4 h-12 w-12 text-slate-500" />
-        <h3 className="text-xl font-semibold text-slate-100">No Problems Found</h3>
+        <h3 className="text-xl font-semibold text-slate-100">
+          No Problems Found
+        </h3>
         <p className="text-slate-400">Try adjusting your search or filters.</p>
       </div>
     );
@@ -152,29 +177,42 @@ export default function ProblemsListPage() {
   return (
     <div className="min-h-screen bg-slate-900 px-4 pt-28 pb-12 text-slate-300 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <h1 className="text-4xl font-extrabold tracking-tight text-slate-50 md:text-5xl">Problem Set</h1>
+        <h1 className="text-4xl font-extrabold tracking-tight text-slate-50 md:text-5xl">
+          Problem Set
+        </h1>
         <p className="mt-4 text-lg text-slate-400">Find your next challenge.</p>
-        
+
         {/* ✨ FIX: Conditionally render the filter section only on the client */}
         {hasMounted && (
           <div className="my-8 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
-                <input 
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+                  size={20}
+                />
+                <input
                   type="text"
                   placeholder="Search by title..."
                   value={searchQuery}
-                  onChange={(e) => handleFilterChange(setSearchQuery)(e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange(setSearchQuery)(e.target.value)
+                  }
                   className="w-full rounded-md border border-slate-700 bg-slate-800 py-2.5 pl-10 pr-4 text-white focus:border-indigo-500 focus:ring-indigo-500"
                 />
               </div>
               <div className="flex items-center gap-2 rounded-md border border-slate-700 bg-slate-800 p-1">
-                {["", "EASY", "MEDIUM", "HARD"].map(difficulty => (
+                {["", "EASY", "MEDIUM", "HARD"].map((difficulty) => (
                   <button
                     key={difficulty || "ALL"}
-                    onClick={() => handleFilterChange(setSelectedDifficulty)(difficulty)}
-                    className={`w-full rounded px-3 py-1.5 text-sm font-semibold transition-colors ${selectedDifficulty === difficulty ? "bg-indigo-600 text-white" : "text-slate-400 hover:bg-slate-700"}`}
+                    onClick={() =>
+                      handleFilterChange(setSelectedDifficulty)(difficulty)
+                    }
+                    className={`w-full rounded px-3 py-1.5 text-sm font-semibold transition-colors ${
+                      selectedDifficulty === difficulty
+                        ? "bg-indigo-600 text-white"
+                        : "text-slate-400 hover:bg-slate-700"
+                    }`}
                   >
                     {difficulty || "All"}
                   </button>
@@ -182,11 +220,26 @@ export default function ProblemsListPage() {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button onClick={() => handleFilterChange(setSelectedTag)("")} className={`cursor-pointer rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-300 ${!selectedTag ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}>
+              <button
+                onClick={() => handleFilterChange(setSelectedTag)("")}
+                className={`cursor-pointer rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-300 ${
+                  !selectedTag
+                    ? "bg-indigo-600 text-white"
+                    : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                }`}
+              >
                 All Tags
               </button>
               {allTags.map((tag) => (
-                <button key={tag} onClick={() => handleFilterChange(setSelectedTag)(tag)} className={`cursor-pointer rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-300 ${selectedTag === tag ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}>
+                <button
+                  key={tag}
+                  onClick={() => handleFilterChange(setSelectedTag)(tag)}
+                  className={`cursor-pointer rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-300 ${
+                    selectedTag === tag
+                      ? "bg-indigo-600 text-white"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                  }`}
+                >
                   {tag}
                 </button>
               ))}
@@ -200,11 +253,21 @@ export default function ProblemsListPage() {
         {/* Pagination */}
         {totalPages > 1 && !loading && !error && (
           <div className="mt-10 flex items-center justify-center gap-4">
-            <button className="flex cursor-pointer items-center gap-2 rounded-md bg-slate-800 px-4 py-2 font-semibold text-slate-300 transition-all hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+            <button
+              className="flex cursor-pointer items-center gap-2 rounded-md bg-slate-800 px-4 py-2 font-semibold text-slate-300 transition-all hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
               <ChevronLeft size={16} /> Prev
             </button>
-            <span className="font-medium text-slate-400">Page {page} of {totalPages}</span>
-            <button className="flex cursor-pointer items-center gap-2 rounded-md bg-slate-800 px-4 py-2 font-semibold text-slate-300 transition-all hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+            <span className="font-medium text-slate-400">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              className="flex cursor-pointer items-center gap-2 rounded-md bg-slate-800 px-4 py-2 font-semibold text-slate-300 transition-all hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+            >
               Next <ChevronRight size={16} />
             </button>
           </div>

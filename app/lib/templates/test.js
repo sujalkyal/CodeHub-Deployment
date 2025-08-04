@@ -25,16 +25,16 @@ structures.forEach((structure, idx) => {
     structure,
     cpp: {
       boilerplate: cpp_result.boilerplate,
-      fullBoilerplate: cpp_result.fullBoilerplate
+      fullBoilerplate: cpp_result.fullBoilerplate,
     },
     java: {
       boilerplate: java_result.boilerplate,
-      fullBoilerplate: java_result.fullBoilerplate
+      fullBoilerplate: java_result.fullBoilerplate,
     },
     python: {
       boilerplate: python_result.boilerplate,
-      fullBoilerplate: python_result.fullBoilerplate
-    }
+      fullBoilerplate: python_result.fullBoilerplate,
+    },
   });
 });
 

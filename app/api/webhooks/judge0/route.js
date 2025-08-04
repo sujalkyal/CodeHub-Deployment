@@ -19,11 +19,16 @@ const judge0CallbackSchema = z.object({
 // Only handle PUT requests
 export async function PUT(req) {
   const { searchParams } = new URL(req.url);
-  const submissionTestCaseResultsId = searchParams.get("submissionTestCaseResultsId");
+  const submissionTestCaseResultsId = searchParams.get(
+    "submissionTestCaseResultsId"
+  );
 
   if (!submissionTestCaseResultsId) {
     console.error("[Webhook] Missing submissionTestCaseResultsId");
-    return Response.json({ error: "Missing submissionTestCaseResultsId" }, { status: 400 });
+    return Response.json(
+      { error: "Missing submissionTestCaseResultsId" },
+      { status: 400 }
+    );
   }
 
   const numericId = parseInt(submissionTestCaseResultsId, 10);
@@ -40,15 +45,8 @@ export async function PUT(req) {
       return Response.json({ error: "Invalid callback body" }, { status: 400 });
     }
 
-    const {
-      status,
-      stdout,
-      stderr,
-      compile_output,
-      message,
-      time,
-      memory
-    } = parsed.data;
+    const { status, stdout, stderr, compile_output, message, time, memory } =
+      parsed.data;
 
     let passed = 0;
     if (status.id === 3) passed = 1;
@@ -69,7 +67,9 @@ export async function PUT(req) {
       },
     });
 
-    console.log(`[Webhook] Processed: ID ${numericId}, Status: ${status.id} (${status.description})`);
+    console.log(
+      `[Webhook] Processed: ID ${numericId}, Status: ${status.id} (${status.description})`
+    );
     return Response.json({ message: "Webhook received successfully." });
   } catch (error) {
     console.error("[Webhook] Internal server error:", error);

@@ -2,7 +2,7 @@
  * @fileoverview API endpoint to submit code for a problem.
  * Route: /api/submit
  * Method: POST
- * 
+ *
  * Accepts user code, language, and problem slug, then:
  *  - Fetches test cases from S3
  *  - Wraps code with boilerplate
@@ -16,8 +16,8 @@ import { z } from "zod";
 import prisma from "../../../utils/db.js";
 import axios from "axios";
 import { downloadFile } from "../../../utils/db.js";
-import {auth } from '@clerk/nextjs/server'
-import {getAvailableApiKey} from "../../../utils/rapidApiKeyManager.js"
+import { auth } from "@clerk/nextjs/server";
+import { getAvailableApiKey } from "../../../utils/rapidApiKeyManager.js";
 
 // Zod schema for validating submission payload
 const submissionSchema = z.object({
@@ -55,22 +55,26 @@ async function getTestCasesFromS3(slug) {
  */
 export async function POST(req) {
   try {
-
-      const { userId } = await auth();
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    
+
     // Validate request body
     const body = await req.json();
     const parsedBody = submissionSchema.safeParse(body);
     if (!parsedBody.success) {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 }
+      );
     }
-    const {  problemSlug, languageId, code } = parsedBody.data;
+    const { problemSlug, languageId, code } = parsedBody.data;
 
     // Fetch problem
-    const problem = await prisma.problem.findUnique({ where: { slug: problemSlug } });
+    const problem = await prisma.problem.findUnique({
+      where: { slug: problemSlug },
+    });
     if (!problem) {
       return NextResponse.json({ error: "Problem not found" }, { status: 404 });
     }
@@ -81,17 +85,27 @@ export async function POST(req) {
       where: { problemId: problem.id, languageId },
     });
     if (!boilerplate || !boilerplate.fullcode || !boilerplate.code) {
-      console.warn(`[POST] /api/submit - Boilerplate not found for problem: ${problemSlug}, language ID: ${languageId}`);
-      return NextResponse.json({ error: "Boilerplate for this language not found." }, { status: 404 });
+      console.warn(
+        `[POST] /api/submit - Boilerplate not found for problem: ${problemSlug}, language ID: ${languageId}`
+      );
+      return NextResponse.json(
+        { error: "Boilerplate for this language not found." },
+        { status: 404 }
+      );
     }
     const finalCode = boilerplate.fullcode.replace(boilerplate.code, code);
 
     // Fetch test cases
     const testCases = await getTestCasesFromS3(problemSlug);
     if (testCases.length === 0) {
-      return NextResponse.json({ error: "No test cases found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "No test cases found" },
+        { status: 404 }
+      );
     }
-    console.log(`[POST] /api/submit - Fetched ${testCases.length} test cases for problem: ${problemSlug}`);
+    console.log(
+      `[POST] /api/submit - Fetched ${testCases.length} test cases for problem: ${problemSlug}`
+    );
 
     // Create submission record
     const submission = await prisma.submission.create({
@@ -104,7 +118,9 @@ export async function POST(req) {
         token: `submission-${Date.now()}`,
       },
     });
-    console.log(`[POST] /api/submit - Created submission with ID: ${submission.id}`);
+    console.log(
+      `[POST] /api/submit - Created submission with ID: ${submission.id}`
+    );
 
     // Create result records and dispatch jobs to Judge0
     const judge0Promises = testCases.map(async (testCase) => {
@@ -123,7 +139,9 @@ export async function POST(req) {
         },
       });
       const callbackUrl = `${process.env.WEBHOOK_URL}?submissionTestCaseResultsId=${resultRecord.id}`;
-      console.log(`[POST] /api/submit - Dispatching to Judge0 with callback: ${callbackUrl}`);
+      console.log(
+        `[POST] /api/submit - Dispatching to Judge0 with callback: ${callbackUrl}`
+      );
       const { key, host } = getAvailableApiKey();
       console.log(`[POST] /api/submit - Using Judge0 API key: ${key}`);
       return axios.post(
@@ -146,7 +164,10 @@ export async function POST(req) {
     });
 
     Promise.all(judge0Promises).catch((err) => {
-      console.error("[POST] /api/submit - Error dispatching to Judge0:", err.message);
+      console.error(
+        "[POST] /api/submit - Error dispatching to Judge0:",
+        err.message
+      );
     });
 
     // Respond with submission ID

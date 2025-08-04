@@ -1,4 +1,3 @@
-
 /**
  * Script to convert problem structure to C++ code.
  * Exports a function that returns both boilerplate and full-boilerplate code for a given structure.
@@ -9,7 +8,7 @@
 
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,18 +24,28 @@ const typeMapping = JSON.parse(fs.readFileSync(mappingPath, "utf-8"));
 function parseStructure(structure) {
   console.log("[parseStructure] Parsing structure:\n", structure);
   // Split by lines and parse functions/classes
-  const lines = structure.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const lines = structure
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
   const result = { functions: [], classes: [] };
   let i = 0;
   while (i < lines.length) {
     if (lines[i].startsWith("Function:")) {
-      const func = { name: lines[i].split(":")[1].trim(), inputs: [], outputType: null };
+      const func = {
+        name: lines[i].split(":")[1].trim(),
+        inputs: [],
+        outputType: null,
+      };
       i++;
-      while (i < lines.length && (lines[i].startsWith("Input:") || lines[i].startsWith("Output:"))) {
+      while (
+        i < lines.length &&
+        (lines[i].startsWith("Input:") || lines[i].startsWith("Output:"))
+      ) {
         if (lines[i].startsWith("Input:")) {
           const inputStr = lines[i].replace("Input:", "").trim();
           if (inputStr) {
-            inputStr.split(",").forEach(pair => {
+            inputStr.split(",").forEach((pair) => {
               const [type, ...nameParts] = pair.trim().split(" ");
               func.inputs.push({ type, name: nameParts.join(" ") });
             });
@@ -57,11 +66,14 @@ function parseStructure(structure) {
           const methodLine = lines[i].replace("-", "").trim();
           const method = { name: methodLine, inputs: [], outputType: null };
           i++;
-          while (i < lines.length && (lines[i].startsWith("Input:") || lines[i].startsWith("Output:"))) {
+          while (
+            i < lines.length &&
+            (lines[i].startsWith("Input:") || lines[i].startsWith("Output:"))
+          ) {
             if (lines[i].startsWith("Input:")) {
               const inputStr = lines[i].replace("Input:", "").trim();
               if (inputStr) {
-                inputStr.split(",").forEach(pair => {
+                inputStr.split(",").forEach((pair) => {
                   const [type, ...nameParts] = pair.trim().split(" ");
                   method.inputs.push({ type, name: nameParts.join(" ") });
                 });
@@ -79,7 +91,10 @@ function parseStructure(structure) {
       i++;
     }
   }
-  console.log("[parseStructure] Parsed result:", JSON.stringify(result, null, 2));
+  console.log(
+    "[parseStructure] Parsed result:",
+    JSON.stringify(result, null, 2)
+  );
   return result;
 }
 
@@ -100,9 +115,15 @@ function mapType(type) {
  * @returns {string} C++ function boilerplate.
  */
 function generateFunctionBoilerplate(func) {
-  const args = func.inputs.map(inp => `${mapType(inp.type)} ${inp.name}`).join(", ");
-  const code = `${mapType(func.outputType)} ${func.name}(${args}) {\n  // Write your code here \n}`;
-  console.log(`[generateFunctionBoilerplate] Generated for function '${func.name}':\n${code}`);
+  const args = func.inputs
+    .map((inp) => `${mapType(inp.type)} ${inp.name}`)
+    .join(", ");
+  const code = `${mapType(func.outputType)} ${
+    func.name
+  }(${args}) {\n  // Write your code here \n}`;
+  console.log(
+    `[generateFunctionBoilerplate] Generated for function '${func.name}':\n${code}`
+  );
   return code;
 }
 
@@ -113,12 +134,18 @@ function generateFunctionBoilerplate(func) {
  */
 function generateClassBoilerplate(cls) {
   let code = `class ${cls.name} {\npublic:`;
-  cls.methods.forEach(method => {
-    const args = method.inputs.map(inp => `${mapType(inp.type)} ${inp.name}`).join(", ");
-    code += `\n    ${mapType(method.outputType)} ${method.name}(${args}) {\n        // Write your code here\n    }`;
+  cls.methods.forEach((method) => {
+    const args = method.inputs
+      .map((inp) => `${mapType(inp.type)} ${inp.name}`)
+      .join(", ");
+    code += `\n    ${mapType(method.outputType)} ${
+      method.name
+    }(${args}) {\n        // Write your code here\n    }`;
   });
   code += `\n};`;
-  console.log(`[generateClassBoilerplate] Generated for class '${cls.name}':\n${code}`);
+  console.log(
+    `[generateClassBoilerplate] Generated for class '${cls.name}':\n${code}`
+  );
   return code;
 }
 
@@ -129,10 +156,10 @@ function generateClassBoilerplate(cls) {
  */
 function generateBoilerplate(parsed) {
   let code = "";
-  parsed.classes.forEach(cls => {
+  parsed.classes.forEach((cls) => {
     code += generateClassBoilerplate(cls) + "\n\n";
   });
-  parsed.functions.forEach(func => {
+  parsed.functions.forEach((func) => {
     code += generateFunctionBoilerplate(func) + "\n\n";
   });
   console.log("[generateBoilerplate] Combined boilerplate generated.");
@@ -149,7 +176,18 @@ function generateInputCode(input, knownSizes = {}) {
   const type = mapType(input.type);
   const name = input.name;
   let logMsg = `[generateInputCode] Generating input code for '${name}' of type '${type}'`;
-  if (["int", "string", "bool", "double", "float", "char", "long", "long long"].includes(type)) {
+  if (
+    [
+      "int",
+      "string",
+      "bool",
+      "double",
+      "float",
+      "char",
+      "long",
+      "long long",
+    ].includes(type)
+  ) {
     // Scalar
     console.log(logMsg + " (scalar)");
     return `    ${type} ${name};\n    cin >> ${name};\n`;
@@ -161,7 +199,10 @@ function generateInputCode(input, knownSizes = {}) {
     if (!rowsVar || !colsVar) {
       return `    // ERROR: Unable to infer sizes for 2D vector '${name}'\n`;
     }
-    const innerType = type.match(/<([^<>]+)>/g).pop().slice(1, -1);
+    const innerType = type
+      .match(/<([^<>]+)>/g)
+      .pop()
+      .slice(1, -1);
     return (
       `    ${type} ${name}(${rowsVar}, vector<${innerType}>(${colsVar}));\n` +
       `    for(int i = 0; i < ${rowsVar}; ++i)\n` +
@@ -190,7 +231,15 @@ function generateInputCode(input, knownSizes = {}) {
 function generateOutputCode(outputType) {
   const type = mapType(outputType); // ensure mapped to C++ equivalent
   let logMsg = `[generateOutputCode] Generating output code for type '${type}'`;
-  if (type === "int" || type === "string" || type === "bool" || type === "double" || type === "float" || type === "char" || type === "long") {
+  if (
+    type === "int" ||
+    type === "string" ||
+    type === "bool" ||
+    type === "double" ||
+    type === "float" ||
+    type === "char" ||
+    type === "long"
+  ) {
     console.log(logMsg + " (scalar)");
     return `    cout << result << endl;`;
   } else if (type.startsWith("vector<vector<")) {
@@ -226,9 +275,11 @@ function generateFullBoilerplate(parsed) {
   code += generateBoilerplate(parsed) + "\n\n";
   code += "int main() {\n";
   // For demo, just show input/output for first function or method
-  let mainFunc = parsed.functions[0] || (parsed.classes[0]?.methods[0]);
+  let mainFunc = parsed.functions[0] || parsed.classes[0]?.methods[0];
   if (mainFunc) {
-    console.log(`[generateFullBoilerplate] Generating main() for '${mainFunc.name}'`);
+    console.log(
+      `[generateFullBoilerplate] Generating main() for '${mainFunc.name}'`
+    );
     // Generate input code
     let knownSizes = {};
     for (let i = 0; i < mainFunc.inputs.length; i++) {
@@ -236,14 +287,18 @@ function generateFullBoilerplate(parsed) {
       code += generateInputCode(inp, knownSizes);
       // Store scalar values like `int n` or `int m`
       const type = mapType(inp.type);
-      if (type === 'int') knownSizes[inp.name] = true;
+      if (type === "int") knownSizes[inp.name] = true;
     }
     // Call function/class method
     let call;
     if (parsed.functions[0]) {
-      call = `${mainFunc.name}(${mainFunc.inputs.map(inp => inp.name).join(", ")})`;
+      call = `${mainFunc.name}(${mainFunc.inputs
+        .map((inp) => inp.name)
+        .join(", ")})`;
     } else {
-      call = `${parsed.classes[0].name} obj;\n    obj.${mainFunc.name}(${mainFunc.inputs.map(inp => inp.name).join(", ")})`;
+      call = `${parsed.classes[0].name} obj;\n    obj.${
+        mainFunc.name
+      }(${mainFunc.inputs.map((inp) => inp.name).join(", ")})`;
     }
     code += `    auto result = ${call};\n`;
     code += generateOutputCode(mainFunc.outputType) + "\n";
@@ -258,10 +313,14 @@ function generateFullBoilerplate(parsed) {
  * @returns {Object} { boilerplate, fullBoilerplate }
  */
 export function generateCppBoilerplates(structure) {
-  console.log("[generateCppBoilerplates] Generating C++ boilerplates for structure...");
+  console.log(
+    "[generateCppBoilerplates] Generating C++ boilerplates for structure..."
+  );
   const parsed = parseStructure(structure);
   const boilerplate = generateBoilerplate(parsed);
   const fullBoilerplate = generateFullBoilerplate(parsed);
-  console.log("[generateCppBoilerplates] Generation complete. Returning results.");
+  console.log(
+    "[generateCppBoilerplates] Generation complete. Returning results."
+  );
   return { boilerplate, fullBoilerplate };
 }

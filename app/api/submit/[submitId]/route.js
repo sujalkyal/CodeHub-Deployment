@@ -2,12 +2,12 @@
  * @fileoverview API endpoint to poll the status and results of a code submission.
  * Route: /api/submit/[submitId]
  * Method: GET
- * 
+ *
  * The frontend calls this endpoint with a submission ID to check for the final result.
  * Returns processing status, or final result with test case details.
  */
 
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 import prisma from "../../../../utils/db.js";
 
 /**
@@ -18,10 +18,15 @@ export async function GET(req, context) {
   try {
     const { submitId } = await context.params;
     const numericId = parseInt(submitId, 10);
-    console.log(`[GET] /api/submit/${submitId} - Polling for submission ID: ${numericId}`);
+    console.log(
+      `[GET] /api/submit/${submitId} - Polling for submission ID: ${numericId}`
+    );
 
     if (isNaN(numericId)) {
-      return NextResponse.json({ error: 'Invalid submission ID' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid submission ID" },
+        { status: 400 }
+      );
     }
 
     // Fetch the submission and its related test case results
@@ -31,14 +36,17 @@ export async function GET(req, context) {
     });
 
     if (!submission) {
-      return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Submission not found" },
+        { status: 404 }
+      );
     }
 
     // Check if all test cases have been processed (i.e., are no longer -1)
     const allFinished = submission.results.every((r) => r.passed !== -1);
 
     // Prepare detailed test case results for frontend
-    const testCaseResults = submission.results.map(r => ({
+    const testCaseResults = submission.results.map((r) => ({
       id: r.id,
       passed: r.passed,
       statusId: r.statusId,
@@ -52,21 +60,26 @@ export async function GET(req, context) {
     }));
 
     if (!allFinished) {
-      const finishedCount = submission.results.filter(r => r.passed !== -1).length;
-      return NextResponse.json({
-        statusId: 2, // "Processing"
-        message: 'Submission is still being processed.',
-        finishedCount,
-        totalTestCases: submission.results.length,
-        testCaseResults,
-      }, { status: 200 });
+      const finishedCount = submission.results.filter(
+        (r) => r.passed !== -1
+      ).length;
+      return NextResponse.json(
+        {
+          statusId: 2, // "Processing"
+          message: "Submission is still being processed.",
+          finishedCount,
+          totalTestCases: submission.results.length,
+          testCaseResults,
+        },
+        { status: 200 }
+      );
     }
 
     // If all results are in, aggregate the overall status
     let finalStatusId = 3; // Default to Accepted
-    let finalStatusDescription = 'Accepted';
+    let finalStatusDescription = "Accepted";
     // If any test case is not Accepted, use the first non-accepted status as the overall status
-    const nonAccepted = submission.results.find(r => r.statusId !== 3);
+    const nonAccepted = submission.results.find((r) => r.statusId !== 3);
     if (nonAccepted) {
       finalStatusId = nonAccepted.statusId;
       finalStatusDescription = nonAccepted.statusDescription;
@@ -82,18 +95,23 @@ export async function GET(req, context) {
       });
     }
 
-    const passedCount = submission.results.filter(r => r.passed === 1).length;
-    return NextResponse.json({
-      ...finalSubmission,
-      passedCount,
-      totalTestCases: submission.results.length,
-      statusId: finalStatusId,
-      statusDescription: finalStatusDescription,
-      testCaseResults,
-    }, { status: 200 });
-
+    const passedCount = submission.results.filter((r) => r.passed === 1).length;
+    return NextResponse.json(
+      {
+        ...finalSubmission,
+        passedCount,
+        totalTestCases: submission.results.length,
+        statusId: finalStatusId,
+        statusDescription: finalStatusDescription,
+        testCaseResults,
+      },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error('[GET] /api/submit/[submitId] - Polling Error:', error);
-    return NextResponse.json({ error: 'An internal server error occurred.' }, { status: 500 });
+    console.error("[GET] /api/submit/[submitId] - Polling Error:", error);
+    return NextResponse.json(
+      { error: "An internal server error occurred." },
+      { status: 500 }
+    );
   }
 }
