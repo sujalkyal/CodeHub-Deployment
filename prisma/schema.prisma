@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model User {
+  id           String         @id 
+  username     String?       @unique @default("anonymous_username")
+  email        String       @unique
+  createdAt    DateTime     @default(now())
+  
+  submissions  Submission[]
+}
+
+model Problem {
+  id           Int          @id @default(autoincrement())
+  title        String       @unique
+  slug         String       @unique
+  structure    String       // structure of the problem used for code generation
+  description  String
+  inputFormat  String
+  outputFormat String
+  constraints  String
+  sampleInput  String
+  sampleOutput String
+  difficulty   Difficulty
+  createdAt    DateTime     @default(now())
+
+  submissions  Submission[]
+  tags         ProblemTag[]
+  boilerplates ProblemBoilerplate[]
+}
+
+model ProblemBoilerplate {
+  id         Int      @id @default(autoincrement())
+  problemId  Int
+  languageId Int
+  code       String   @db.Text    // Boilerplate code for the problem in the specific language
+  fullcode   String?  @db.Text    // Full boilerplate code (including imports, etc.)
+
+  problem    Problem  @relation(fields: [problemId], references: [id])
+  language   Language @relation(fields: [languageId], references: [id])
+
+  @@unique([problemId, languageId])
+}
+
+model Tag {
+  id        Int          @id @default(autoincrement())
+  name      String       @unique
+
+  problems  ProblemTag[]
+}
+
+model ProblemTag {
+  id        Int      @id @default(autoincrement())
+  problemId Int
+  tagId     Int
+
+  problem   Problem @relation(fields: [problemId], references: [id])
+  tag       Tag     @relation(fields: [tagId], references: [id])
+
+  @@unique([problemId, tagId])
+}
+
+model Language {
+  id            Int       @id @default(autoincrement())
+  judge0Id      Int       @unique   // Maps to Judge0's language_id
+  name          String    @unique
+  version       String?
+  fileExtension String?
+
+  submissions   Submission[]
+  boilerplates  ProblemBoilerplate[]
+}
+
+model Submission {
+  id             Int       @id @default(autoincrement())
+  userId         String
+  problemId      Int
+  languageId     Int
+  code           String
+  token          String     // Judge0 token
+  statusId       Int        // Judge0 status_id (1 = AC, 3 = CE, etc.)
+  createdAt      DateTime   @default(now())
+
+  user           User       @relation(fields: [userId], references: [id])
+  problem        Problem    @relation(fields: [problemId], references: [id])
+  language       Language   @relation(fields: [languageId], references: [id])
+  results        submissionTestCaseResults[]
+}
+
+model submissionTestCaseResults {
+  id                Int       @id @default(autoincrement())
+  submissionId      Int
+  passed            Int // -1 for processing, 0 for failed, 1 for passed
+  statusId          Int?      // Judge0 status id
+  statusDescription String?   // Judge0 status description
+  stdout            String?   // Judge0 stdout (base64)
+  stderr            String?   // Judge0 stderr (base64)
+  compileOutput     String?   // Judge0 compile_output (base64)
+  message           String?   // Judge0 message (base64)
+  time              String?   // Judge0 time
+  memory            Int?      // Judge0 memory
+
+  submission        Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+}

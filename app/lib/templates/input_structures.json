@@ -1,0 +1,12 @@
+[
+  "Function: noInputFunction\nOutput: int",
+  "Function: add\nInput: int a, int b\nOutput: int",
+  "Function: concatStrings\nInput: string a, string b\nOutput: string",
+  "Function: isEven\nInput: int n\nOutput: bool",
+  "Function: sumList\nInput: int n, list<int> arr\nOutput: int",
+  "Function: flattenMatrix\nInput: int n, int m, list<list<int>> matrix\nOutput: list<int>",
+  "Function: getFirstChar\nInput: string s\nOutput: char",
+  "Function: mergeStringLists\nInput: int n, list<string> a, int m, list<string> b\nOutput: list<string>",
+  "Function: processStringMatrix\nInput: int n, int m, list<list<string>> matrix\nOutput: list<string>",
+  "Function: processQueries\nInput: int n, list<int> arr, int q, int m, list<list<int>> queries\nOutput: list<int>"
+]
