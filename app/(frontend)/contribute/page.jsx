@@ -70,7 +70,7 @@ export default function ContributePage() {
     data.append("input_output", file);
     console.log("[Contribute] Submitting problem data:", data);
     const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_BOILERPLATE_API_URL || "http://localhost:4000/generate"}`,
+        "/api/generate",
         data
       );
 
