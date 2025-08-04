@@ -1,13 +1,6 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
-import { fileURLToPath } from 'url';
-import dotenv from "dotenv";
-import path from "path";
 
 let s3Instance = null;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 export function getS3Client() {
   if (!s3Instance) {
@@ -15,7 +8,7 @@ export function getS3Client() {
       throw new Error("Missing AWS credentials");
     }
     s3Instance = new S3Client({
-      region: process.env.AWS_REGION || "us-east-1",
+      region: process.env.AWS_REGION || "ap-south-1",
       credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
