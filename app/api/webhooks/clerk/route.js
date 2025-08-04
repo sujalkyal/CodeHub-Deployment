@@ -1,9 +1,6 @@
-// app/api/webhooks/clerk/route.js
-import { Webhook } from 'svix';
-// We no longer need to import 'headers' from 'next/headers'
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+import { Webhook } from 'svix';
+import prisma from '../../../../utils/db.js';
 
 export async function POST(req) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;

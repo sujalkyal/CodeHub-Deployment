@@ -14,10 +14,10 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import axios from 'axios';
-import prisma from "@repo/db/client";
-import { downloadFile } from "@repo/s3-client/client";
-import { getAuth, clerkClient } from '@clerk/nextjs/server'
-import {getAvailableApiKey} from "../../../utils/rapidApiKeyManager"
+import prisma from "../../../utils/db.js";
+import { downloadFile } from "../../../utils/s3-client.js";
+import { getAuth } from "@clerk/nextjs/server";
+import {getAvailableApiKey} from "../../../utils/rapidApiKeyManager.js"
 const runSchema = z.object({
   problemSlug: z.string(),
   languageId: z.number(),

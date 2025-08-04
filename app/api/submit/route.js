@@ -13,11 +13,11 @@
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import prisma from "@repo/db/client";
+import prisma from "../../../utils/db.js";
 import axios from "axios";
-import { downloadFile } from "@repo/s3-client/client";
+import { downloadFile } from "../../../utils/db.js";
 import {auth } from '@clerk/nextjs/server'
-import {getAvailableApiKey} from "../../../utils/rapidApiKeyManager"
+import {getAvailableApiKey} from "../../../utils/rapidApiKeyManager.js"
 
 // Zod schema for validating submission payload
 const submissionSchema = z.object({

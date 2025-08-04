@@ -1,5 +1,5 @@
 import { z } from "zod";
-import prisma from "@repo/db/client";
+import prisma from "../../../../utils/db.js";
 
 // Zod schema to validate Judge0 callback (all relevant fields)
 const judge0CallbackSchema = z.object({

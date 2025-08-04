@@ -11,7 +11,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import prisma from "@repo/db/client";
+import prisma from "../../../../utils/db.js";
 
 export async function GET(req, { params }) {
   try {

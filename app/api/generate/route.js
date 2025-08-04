@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { handleGeneration } from "@/services/boilerplateService";
+import { handleGeneration } from "../../lib/boilerplateService.js";
 import { Readable } from "stream";
 import busboy from "busboy";
 

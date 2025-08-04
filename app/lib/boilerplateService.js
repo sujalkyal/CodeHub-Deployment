@@ -9,11 +9,11 @@
  * Date: 25/07/2025
  */
 
-import { uploadFile } from "@repo/s3-client/client";
+import { uploadFile } from "../../utils/s3-client.js";
 import { generatePythonBoilerplates } from "./templates/toPython.js";
 import { generateJavaBoilerplates } from "./templates/toJava.js";
 import { generateCppBoilerplates } from "./templates/toCpp.js";
-import prisma from "@repo/db/client";
+import prisma from "../../utils/db.js";
 
 
 /**
