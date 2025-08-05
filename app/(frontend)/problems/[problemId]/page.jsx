@@ -230,14 +230,14 @@ export default function ProblemSolvePage() {
         setRunResult({ error: "Run failed during polling." });
         setIsRunning(false);
       }
-    }, 3000);
+    }, 1000);
     timeoutId = setTimeout(() => {
       clearInterval(pollingRef.current);
       setRunResult({
         error: "Run timed out. Please check for infinite loops.",
       });
       setIsRunning(false);
-    }, 30000);
+    }, 5000);
   };
 
   const pollSubmit = (submitId) => {
@@ -258,12 +258,12 @@ export default function ProblemSolvePage() {
         setSubmitResult({ error: "Submit failed during polling." });
         setIsSubmitting(false);
       }
-    }, 3000);
+    }, 1000);
     timeoutId = setTimeout(() => {
       clearInterval(pollingRef.current);
       setSubmitResult({ error: "Submission timed out." });
       setIsSubmitting(false);
-    }, 600000);
+    }, 5000);
   };
 
   // --- Original Action Handlers ---
