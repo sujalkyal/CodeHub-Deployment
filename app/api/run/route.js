@@ -159,7 +159,7 @@ export async function POST(req) {
       console.log(
         `[Run API] Dispatching to Judge0 for submissionTestCaseResultsId: ${resultRecord.id}`
       );
-      const { key, host } = getAvailableApiKey();
+      const { key } = getAvailableApiKey();
       console.log(`[POST] /api/submit - Using Judge0 API key: ${key}`);
       judge0Promises.push(
         axios.post(
@@ -174,7 +174,7 @@ export async function POST(req) {
           {
             headers: {
               "Content-Type": "application/json",
-              "x-rapidapi-host": host,
+              "x-rapidapi-host": process.env.RAPID_API_HOST,
               "x-rapidapi-key": key,
             },
           }
