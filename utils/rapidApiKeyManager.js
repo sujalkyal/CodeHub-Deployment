@@ -2,11 +2,11 @@ const API_LIMIT = 40; // per key
 
 // Initialize all your keys here
 const apiKeys = [
-  { key: process.env.RAPID_API_KEY_1, host: process.env.RAPID_API_HOST, usage: 0 },
-  { key: process.env.RAPID_API_KEY_2, host: process.env.RAPID_API_HOST, usage: 0 },
-  { key: process.env.RAPID_API_KEY_3, host: process.env.RAPID_API_HOST, usage: 0 },
-  { key: process.env.RAPID_API_KEY_4, host: process.env.RAPID_API_HOST, usage: 0 },
-  { key: process.env.RAPID_API_KEY_5, host: process.env.RAPID_API_HOST, usage: 0 }
+  { key: process.env.RAPID_API_KEY_1, usage: 0 },
+  { key: process.env.RAPID_API_KEY_2, usage: 0 },
+  { key: process.env.RAPID_API_KEY_3, usage: 0 },
+  { key: process.env.RAPID_API_KEY_4, usage: 0 },
+  { key: process.env.RAPID_API_KEY_5, usage: 0 }
 ];
 
 // Get the next available API key that hasn't reached the limit
@@ -19,8 +19,7 @@ function getAvailableApiKey() {
 
   availableKey.usage += 1;
   return {
-    key: availableKey.key,
-    host: availableKey.host
+    key: availableKey.key
   };
 }
 

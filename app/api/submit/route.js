@@ -142,7 +142,7 @@ export async function POST(req) {
       console.log(
         `[POST] /api/submit - Dispatching to Judge0 with callback: ${callbackUrl}`
       );
-      const { key, host } = getAvailableApiKey();
+      const { key } = getAvailableApiKey();
       console.log(`[POST] /api/submit - Using Judge0 API key: ${key}`);
       return axios.post(
         `${process.env.JUDGE0_URL}/submissions?base64_encoded=false&wait=false`,
@@ -156,7 +156,7 @@ export async function POST(req) {
         {
           headers: {
             "Content-Type": "application/json",
-            "x-rapidapi-host": host,
+            "x-rapidapi-host": process.env.RAPID_API_HOST,
             "x-rapidapi-key": key,
           },
         }
