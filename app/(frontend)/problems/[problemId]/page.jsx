@@ -237,7 +237,7 @@ export default function ProblemSolvePage() {
         error: "Run timed out. Please check for infinite loops.",
       });
       setIsRunning(false);
-    }, 5000);
+    }, 10000);
   };
 
   const pollSubmit = (submitId) => {
@@ -263,7 +263,7 @@ export default function ProblemSolvePage() {
       clearInterval(pollingRef.current);
       setSubmitResult({ error: "Submission timed out." });
       setIsSubmitting(false);
-    }, 5000);
+    }, 10000);
   };
 
   // --- Original Action Handlers ---
